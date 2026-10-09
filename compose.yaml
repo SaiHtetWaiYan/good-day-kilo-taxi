@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: goodday_kilo_taxi
+      POSTGRES_USER: goodday_kilo_taxi
+      POSTGRES_PASSWORD: goodday_kilo_local
+    ports:
+      - "5433:5432"
+    volumes:
+      - goodday_kilo_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goodday_kilo_taxi -d goodday_kilo_taxi"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  goodday_kilo_pgdata:

@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Good Day Kilo Taxi · Guided prototype</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #202a26; background: #f2f3ee; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { max-width: 1080px; margin: 0 auto; padding: 38px 24px 18px; }
+    h1 { font-size: clamp(30px,4vw,46px); letter-spacing: -.055em; margin: 8px 0 12px; }
+    .eyebrow { color: #16836b; text-transform: uppercase; font-weight: 850; letter-spacing: .16em; font-size: 10px; }
+    .intro { color: #687970; max-width: 660px; line-height: 1.5; margin: 0; }
+    .header-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; }
+    .language-switch { display: inline-flex; gap: 3px; padding: 4px; border: 1px solid #dce3dc; border-radius: 13px; background: #fff; }
+    .language-switch button { border: 0; border-radius: 9px; padding: 8px 11px; background: transparent; color: #52675a; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .language-switch button.active { background: #ffca45; color: #202a26; }
+    .language-switch button:focus-visible, .phone-language:focus-visible { outline: 3px solid #16836b; outline-offset: 2px; }
+    .phone-language { border: 0; background: transparent; color: #16836b; font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; }
+    .layout { max-width: 1080px; margin: 0 auto; padding: 18px 24px 50px; display: grid; grid-template-columns: 250px 1fr; gap: 40px; align-items: start; }
+    .steps { display: grid; gap: 10px; }
+    .step { background: #fff; color: #202a26; border: 1px solid #e3e9e2; text-align: left; border-radius: 16px; padding: 16px; font: inherit; cursor: pointer; }
+    .step strong { display: block; margin: 5px 0; font-size: 15px; }
+    .step small { color: #77877e; line-height: 1.35; }
+    .step.active { background: #202a26; color: #fff; border-color: #202a26; box-shadow: 0 12px 22px #202a2622; }
+    .step.active .eyebrow { color: #ffca45; }
+    .step.active small { color: #cbd6ce; }
+    .role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .role-tab { border: 1px solid #e3e9e2; border-radius: 12px; padding: 11px 6px; background: #fff; color: #202a26; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .role-tab.active { background: #ffca45; border-color: #ffca45; }
+    .guide-title { margin: 0 0 12px; font-size: 14px; color: #687970; }
+    .stage { display: flex; justify-content: center; }
+    .phone { width: 350px; min-height: 690px; border: 9px solid #202a26; border-radius: 44px; overflow: hidden; background: #f8f7f2; box-shadow: 0 22px 60px #244b3b30; position: relative; }
+    .phone::after { content: ''; position: absolute; bottom: 8px; left: 39%; width: 22%; height: 4px; background: #202a26; border-radius: 9px; z-index: 5; }
+    .status { height: 35px; display: flex; justify-content: space-between; align-items: end; padding: 0 20px 5px; font-size: 11px; font-weight: 750; }
+    .nav { height: 55px; display: flex; justify-content: space-between; align-items: center; gap: 5px; padding: 0 14px; }
+    .nav-actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+    .header-brand { display: flex; align-items: center; gap: 14px; }
+    .header-logo { display: block; width: 205px; height: 70px; object-fit: contain; }
+    .brand-logo { display: block; width: 151px; height: 51px; object-fit: contain; flex: 0 1 auto; }
+    .welcome-logo { display: block; width: 190px; height: 143px; object-fit: contain; margin: 0 auto 12px; }
+    .live { font-size: 10px; color: #16836b; font-weight: 800; }
+    .hero { height: 150px; margin: 9px 17px 0; border-radius: 24px; background: #ffca45; position: relative; overflow: hidden; }
+    .hero::after { content: ''; width: 180px; height: 180px; border-radius: 50%; background: #ffffff44; position: absolute; right: -30px; top: -40px; }
+    .hero strong { position: absolute; top: 24px; left: 22px; font-size: 20px; line-height: 1.12; letter-spacing: -.045em; z-index: 2; }
+    .hero small { position: absolute; bottom: 25px; left: 22px; font-size: 9px; font-weight: 850; letter-spacing: .1em; z-index: 2; }
+    .hero .taxi { position: absolute; right: 20px; bottom: 14px; font-size: 60px; line-height: 1; z-index: 2; }
+    .screen { display: none; padding: 21px 19px 34px; }
+    .screen.active { display: block; }
+    h2 { font-size: 25px; line-height: 1.1; letter-spacing: -.048em; margin: 5px 0 8px; }
+    .sub { color: #77877e; font-size: 12px; line-height: 1.4; margin-bottom: 16px; }
+    .card { background: #fff; border: 1px solid #e9ebe5; border-radius: 17px; padding: 14px; margin: 10px 0; }
+    .location { display: flex; gap: 12px; align-items: center; }
+    .symbol { width: 38px; height: 38px; display: grid; place-items: center; background: #ffca45; border-radius: 50%; flex: 0 0 auto; font-size: 19px; }
+    .symbol.gray { background: #e6ece6; }
+    .card .eyebrow { font-size: 9px; }
+    .card strong { display: block; font-size: 14px; margin-top: 3px; }
+    .card small { color: #77877e; }
+    .gps { text-align: right; color: #16836b; font-size: 11px; font-weight: 800; padding: 0 5px 4px; }
+    .fare { display: flex; justify-content: space-between; align-items: center; }
+    .fare strong { font-size: 25px; margin-top: 5px; letter-spacing: -.04em; }
+    .fare .km { font-size: 13px; font-weight: 850; }
+    .button { width: 100%; border: none; border-radius: 14px; background: #202a26; color: white; padding: 15px; margin-top: 10px; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; }
+    .button.outline { background: transparent; color: #202a26; border: 1px solid #202a26; }
+    .progress { height: 5px; width: 100%; border-radius: 5px; background: #d4e7dc; overflow: hidden; margin: 18px 0; }
+    .progress::before { content: ''; display: block; width: 48%; height: 100%; background: #16836b; border-radius: 5px; }
+    .route { display: grid; grid-template-columns: 23px 1fr; gap: 8px; align-items: center; }
+    .route .dot { color: #16836b; font-size: 20px; text-align: center; }
+    .route .dot.end { color: #202a26; }
+    .route .line { margin-left: 10px; height: 21px; width: 2px; background: #dfe6df; }
+    .driver { display: flex; gap: 11px; align-items: center; }
+    .driver .avatar { background: #ffca45; border-radius: 50%; width: 39px; height: 39px; display: grid; place-items: center; }
+    .online { color: #16836b; background: #e0eee7; padding: 7px 10px; border-radius: 20px; font-size: 11px; font-weight: 850; display: inline-block; }
+    .note { text-align: center; color: #798c83; font-size: 12px; margin-top: 18px; }
+    .change-role { border: 0; background: none; color: #16836b; font: inherit; font-size: 10px; font-weight: 800; line-height: 1.1; max-width: 72px; cursor: pointer; }
+    .role-choice { width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; font: inherit; color: #202a26; cursor: pointer; }
+    .role-choice b { width: 38px; height: 38px; flex: 0 0 auto; border-radius: 12px; background: #ffca45; display: grid; place-items: center; }
+    .role-choice.driver-choice b { background: #e0eee7; }
+    .role-choice span { flex: 1; }
+    .role-choice small { display: block; margin-top: 3px; color: #77877e; font-size: 11px; }
+    .field { display: block; font-size: 11px; color: #687970; font-weight: 800; margin: 12px 0; }
+    .field input, .place-search { display: block; width: 100%; padding: 12px; margin-top: 6px; background: white; color: #202a26; border: 1px solid #dce3dc; border-radius: 12px; font: inherit; }
+    .place-choice { width: 100%; text-align: left; border: 1px solid #e3e9e2; background: #fff; border-radius: 13px; padding: 12px; margin: 5px 0; font: inherit; cursor: pointer; }
+    .place-choice.selected { border: 2px solid #16836b; background: #eff7f1; padding: 11px; }
+    .place-choice strong { display: block; font-size: 13px; }
+    .place-choice small { color: #77877e; }
+    .place-list { max-height: 220px; overflow: auto; }
+    .status-pill { display: inline-block; color: #16836b; background: #e0eee7; padding: 8px 11px; border-radius: 20px; font-size: 11px; font-weight: 850; margin: 3px 0 10px; }
+    .status-pill.wait { color: #785d0b; background: #fff1c5; }
+    .button:focus-visible, .step:focus-visible, .role-tab:focus-visible, .role-choice:focus-visible, .place-choice:focus-visible, .change-role:focus-visible, input:focus-visible { outline: 3px solid #16836b; outline-offset: 2px; }
+    .back { border: 0; background: none; color: #16836b; font: inherit; font-size: 12px; font-weight: 800; padding: 13px 0; cursor: pointer; }
+    /* Colors, imagery, and card treatment follow the supplied Good Day Kilo Taxi UI reference. */
+    :root { color: #15345f; background: #eaf7ff; }
+    h1 { color: #113e79; }
+    .eyebrow { color: #0874cf; }
+    .intro, .guide-title, .sub, .note, .card small, .role-choice small, .place-choice small { color: #6983a2; }
+    .language-switch, .step, .role-tab { border-color: #cfe2f6; box-shadow: 0 5px 16px #0d64be0b; }
+    .language-switch button { color: #174476; }
+    .language-switch button.active, .role-tab.active { background: #ffcf35; color: #123b70; border-color: #ffcf35; }
+    .step { color: #163766; }
+    .step.active { background: #075fc8; border-color: #075fc8; box-shadow: 0 12px 24px #075fc82a; }
+    .step.active .eyebrow { color: #ffe47b; }
+    .step.active small { color: #d6eaff; }
+    .phone { border-color: #071d54; background: #f5faff; box-shadow: 0 25px 65px #0864c542; }
+    .phone::after { background: #16366d; }
+    .status { background: #075fc8; color: white; }
+    .nav { height: 62px; background: #075fc8; color: white; }
+    .brand-logo { width: 163px; height: 52px; }
+    .phone-language, .change-role { color: white; }
+    .phone-language { background: #ffffff24; border-radius: 8px; padding: 5px; }
+    .hero { display: none; height: 168px; margin: 0; border-radius: 0 0 25px 25px; background: #0877d6 url('yangon-taxi-banner.jpg') center 53% / cover no-repeat; color: white; }
+    .phone[data-screen="welcome"] .hero { display: block; }
+    .hero::after, .hero .taxi { display: none; }
+    .hero strong { top: 20px; left: 20px; font-size: 19px; color: #fff; text-shadow: 0 2px 10px #063c78; }
+    .hero small { left: 20px; bottom: 18px; color: #fff; text-shadow: 0 1px 6px #063c78; }
+    .welcome-logo { width: 155px; height: 116px; margin-bottom: 7px; }
+    h2 { color: #123b70; }
+    .screen { padding: 20px 19px 32px; }
+    .card { border-color: #dbeafa; border-radius: 18px; box-shadow: 0 5px 16px #126ac00d; }
+    .card strong, .place-choice strong { color: #17386a; }
+    .role-choice { color: #17386a; }
+    .role-choice b, .symbol, .driver .avatar { background: #ffcf35; color: #123b70; }
+    .role-choice.driver-choice b, .symbol.gray { background: #e6f3ff; }
+    .gps, .back, .live { color: #086fd0; }
+    .field { color: #315787; }
+    .field input, .place-search, .place-choice { color: #183e70; border-color: #d5e5f5; background: white; }
+    .place-choice { box-shadow: 0 2px 8px #126ac008; }
+    .place-choice.selected { border-color: #0876dc; background: #edf7ff; }
+    .status-pill, .online { color: #0864bd; background: #e5f3ff; }
+    .status-pill.wait { color: #886100; background: #fff2c8; }
+    .button { background: #ffcf35; color: #133c73; box-shadow: 0 6px 14px #f4ae2633; }
+    .button.outline { color: #0869cc; border-color: #a9d0f3; background: white; box-shadow: none; }
+    .button:focus-visible, .step:focus-visible, .role-tab:focus-visible, .role-choice:focus-visible, .place-choice:focus-visible, .change-role:focus-visible, input:focus-visible { outline-color: #0874d5; }
+    .progress { background: #dcecff; }
+    .progress::before { background: #0874d5; }
+    .route .dot { color: #0874d5; }
+    .route .dot.end { color: #f23669; }
+    .route .line { background: #d3e5f8; }
+    .greeting-card { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #dbeafa; border-radius: 20px; padding: 14px; margin-bottom: 14px; box-shadow: 0 5px 16px #126ac00d; }
+    .greeting-card .sun { flex: 0 0 auto; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #fff2bb; color: #d99600; font-size: 26px; }
+    .greeting-card strong { display: block; font-size: 13px; color: #153b70; }
+    .greeting-card small { display: block; font-size: 10px; color: #6983a2; }
+    .destination-preview { width: 100%; text-align: left; cursor: pointer; display: flex; gap: 10px; align-items: center; color: #17386a; font: inherit; }
+    .destination-preview .pin { color: #ed3d68; font-size: 20px; }
+    .destination-preview span:last-child { font-size: 12px; font-weight: 800; }
+    .home-banner { height: 118px; margin-top: 16px; border-radius: 18px; overflow: hidden; background: #075fc8 url('yangon-taxi-banner.jpg') center 63% / cover no-repeat; display: flex; align-items: end; padding: 13px; }
+    .home-banner strong { color: white; font-size: 12px; text-shadow: 0 2px 8px #043c77; }
+    .home-route { padding: 4px 14px; }
+    .home-route button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 0; border: 0; background: none; text-align: left; font: inherit; cursor: pointer; }
+    .home-route button + button { border-top: 1px solid #e4effa; }
+    .home-route .route-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%; color: white; background: #1180dc; font-size: 14px; }
+    .home-route button + button .route-icon { background: #ee3c69; }
+    .home-route small { display: block; font-size: 10px; color: #718aa8; }
+    .home-route strong { display: block; font-size: 12px; color: #17386a; }
+    .shortcut-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+    .shortcut { min-height: 72px; border: 1px solid #dbeafa; border-radius: 15px; background: #fff; color: #193b70; font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 5px 14px #126ac00d; }
+    .shortcut-icon { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 10px; background: #e5f4ff; color: #0874d5; margin: 0 auto 6px; font-size: 17px; font-weight: 900; }
+    .shortcut.viber .shortcut-icon { background: #eee5ff; color: #7650c9; }
+    .shortcut.favorites .shortcut-icon { background: #fff1be; color: #d79400; }
+    .feature-intro { text-align: center; padding: 24px 12px 14px; }
+    .feature-icon { display: grid; place-items: center; width: 82px; height: 82px; margin: 0 auto 15px; border-radius: 50%; background: #e7f4ff; color: #076ed1; font-size: 39px; font-weight: 850; }
+    .feature-intro h2 { margin-bottom: 7px; }
+    .feature-intro .sub { margin-bottom: 0; }
+    .contact-option { display: flex; align-items: center; gap: 12px; }
+    .contact-option .feature-icon { width: 38px; height: 38px; margin: 0; font-size: 19px; flex: 0 0 auto; }
+    .contact-option strong, .contact-option small { display: block; }
+    .contact-option small { margin-top: 3px; }
+    .demo-note { text-align: center; font-size: 10px; color: #718aa8; margin: 10px 0; }
+    .feature-footer { display: flex; justify-content: space-around; margin: 30px -19px -32px; padding: 20px 10px 25px; border-radius: 28px 28px 0 0; background: #0767ce; color: white; font-size: 11px; font-weight: 800; }
+    .viber-feature .feature-icon { color: #7444c9; background: #efe5ff; }
+    .viber-feature .button { background: #7444c9; color: #fff; box-shadow: 0 6px 14px #7444c933; }
+    .viber-step { display: flex; gap: 12px; align-items: center; padding: 12px 0; }
+    .viber-step + .viber-step { border-top: 1px solid #e7edf8; }
+    .viber-step b { display: grid; place-items: center; width: 27px; height: 27px; flex: 0 0 auto; border-radius: 50%; color: white; background: #137bd7; font-size: 12px; }
+    .viber-step strong, .viber-step small { display: block; }
+    .viber-step small { margin-top: 3px; }
+    .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); width: min(340px, calc(100vw - 32px)); z-index: 20; background: #153b70; color: white; padding: 12px 16px; border-radius: 13px; font-size: 12px; text-align: center; box-shadow: 0 10px 30px #0b376b44; }
+    .toast[hidden] { display: none; }
+    .shortcut:focus-visible, .home-route button:focus-visible { outline: 3px solid #0874d5; outline-offset: 2px; }
+    @media(max-width: 720px) { .layout { grid-template-columns: 1fr; } .stage { grid-row: 1; } .layout > nav { grid-row: 2; } .steps { grid-template-columns: repeat(2, 1fr); } .step { padding: 12px; } .phone { width: 350px; max-width: 100%; } .header-brand { flex-wrap: wrap; gap: 0 10px; } .header-logo { width: 170px; height: 59px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div class="header-brand"><img class="header-logo" src="logo-horizontal.png" alt="Good Day Kilo Taxi logo"><div class="eyebrow">Myanmar pilot</div></div>
+      <div class="language-switch" role="group" aria-label="Language">
+        <button type="button" data-language="en">English</button>
+        <button type="button" data-language="my">မြန်မာ</button>
+      </div>
+    </div>
+    <h1>Explore every step of a ride.</h1>
+    <p class="intro">Start by choosing Passenger or Driver. Then follow each journey in order, or jump between screens in the guide. This clickable prototype uses sample data.</p>
+  </header>
+  <main class="layout">
+    <nav aria-label="Prototype screens">
+      <div class="guide-title" id="guide-title">Choose a role to begin</div>
+      <div class="role-tabs">
+        <button class="role-tab" data-role="passenger">Passenger flow</button>
+        <button class="role-tab" data-role="driver">Driver flow</button>
+      </div>
+      <div class="steps" id="steps"></div>
+    </nav>
+    <div class="stage"><div>
+      <div class="phone">
+        <div class="status"><span>9:41</span><span>●●● ▰</span></div>
+        <div class="nav"><img class="brand-logo" src="logo-header-white.png" alt="Good Day Kilo Taxi logo"><span class="nav-actions"><button class="phone-language" data-toggle-language="true" aria-label="Change language">EN</button><button class="change-role" data-next="welcome">Change role</button></span></div>
+        <div class="hero"><strong>GO ANYWHERE<br>HAVE A GOOD DAY</strong><small>YANGON PILOT · CASH RIDES</small><span class="taxi">🚕</span></div>
+        <section class="screen active" id="welcome">
+          <img class="welcome-logo" src="logo-stacked.png" alt="Good Day Kilo Taxi logo">
+          <div class="eyebrow">Welcome</div><h2>How will you use the app?</h2>
+          <div class="sub">Choose a role to see the right screens and actions.</div>
+          <button class="card role-choice" data-role="passenger"><b>P</b><span><strong>I am a passenger</strong><small>Get a fare estimate and book a taxi</small></span>›</button>
+          <button class="card role-choice driver-choice" data-role="driver"><b>D</b><span><strong>I am a driver</strong><small>Go online and accept nearby rides</small></span>›</button>
+          <div class="card"><strong>Yangon pilot</strong><small>Cash rides with prices shown in Myanmar kyats.</small></div>
+        </section>
+        <section class="screen" id="p-account">
+          <div class="eyebrow">Passenger · 1 of 9</div><h2>Welcome aboard</h2>
+          <div class="sub">Sign in or create your passenger account.</div>
+          <label class="field">Your name<input placeholder="e.g. Su Su" autocomplete="off"></label>
+          <label class="field">Email<input type="email" placeholder="you@example.com" autocomplete="off"></label>
+          <label class="field">Password<input type="password" placeholder="Your password" autocomplete="off"></label>
+          <button class="button" data-next="p-home">Continue demo</button>
+          <div class="note">This prototype does not send account details.</div>
+          <button class="back" data-next="welcome">← Back to role choice</button>
+        </section>
+        <section class="screen" id="p-home">
+          <div class="eyebrow">Passenger · 2 of 9</div>
+          <div class="greeting-card"><span class="sun" aria-hidden="true">☀</span><div><strong>Good day!</strong><small>Where would you like to go today?</small></div></div>
+          <div class="card home-route">
+            <button data-next="p-pickup"><span class="route-icon" aria-hidden="true">●</span><span><small>Pick-up location</small><strong class="pickup-name"></strong></span></button>
+            <button data-next="p-destination"><span class="route-icon" aria-hidden="true">●</span><span><small>Destination</small><strong class="destination-name"></strong></span></button>
+          </div>
+          <button class="button" data-next="p-pickup">Book Taxi</button>
+          <div class="shortcut-grid">
+            <button class="shortcut" data-next="p-call"><span class="shortcut-icon" aria-hidden="true">☎</span>Call Now</button>
+            <button class="shortcut viber" data-next="p-viber"><span class="shortcut-icon" aria-hidden="true">V</span>Viber Booking</button>
+            <button class="shortcut" data-next="p-rides"><span class="shortcut-icon" aria-hidden="true">▤</span>My Rides</button>
+            <button class="shortcut favorites" data-next="p-favorites"><span class="shortcut-icon" aria-hidden="true">★</span>Favorites</button>
+            <button class="shortcut" data-next="p-tracking"><span class="shortcut-icon" aria-hidden="true">◉</span>Live Tracking</button>
+            <button class="shortcut" data-next="p-support"><span class="shortcut-icon" aria-hidden="true">?</span>Support</button>
+          </div>
+          <div class="home-banner"><strong>Your trusted taxi partner</strong></div>
+          <button class="back" data-next="p-account">← Back</button>
+        </section>
+        <section class="screen" id="p-pickup">
+          <div class="eyebrow">Passenger · 3 of 9</div><h2>Choose your pickup</h2>
+          <div class="sub">Search pilot places in Yangon, or use your current location.</div>
+          <input class="place-search" data-search="pickup" placeholder="Search pickup places" aria-label="Search pickup places">
+          <div class="place-list" id="pickup-list"></div>
+          <button class="button outline" data-gps="true">Use my location</button>
+          <button class="button" data-next="p-destination">Next: destination</button>
+          <button class="back" data-next="p-home">← Back</button>
+        </section>
+        <section class="screen" id="p-destination">
+          <div class="eyebrow">Passenger · 4 of 9</div><h2>Choose your destination</h2>
+          <div class="sub">Pick where you want to go from the listed locations.</div>
+          <input class="place-search" data-search="destination" placeholder="Search destinations" aria-label="Search destinations">
+          <div class="place-list" id="destination-list"></div>
+          <button class="button" data-next="quote">Next: review fare</button>
+          <button class="back" data-next="p-pickup">← Back</button>
+        </section>
+        <section class="screen" id="quote">
+          <div class="eyebrow">Passenger · 5 of 9</div><h2>Review your ride</h2>
+          <div class="sub">See the approximate cash fare before you book.</div>
+          <div class="card location"><span class="symbol">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div></div>
+          <div class="card location"><span class="symbol gray">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <div class="card fare"><div><span class="eyebrow">APPROXIMATE CASH FARE</span><strong class="fare-number"></strong><small>Pay the driver in kyats</small></div><span class="km distance-number"></span></div>
+          <div class="note">Sample calculation. The live app uses a road route.</div>
+          <button class="button" data-next="search">Book a taxi</button>
+          <button class="back" data-next="p-destination">← Change destination</button>
+        </section>
+        <section class="screen" id="search">
+          <div class="eyebrow">Passenger · 6 of 9</div><h2>Finding your driver</h2><div class="sub">Nearby available drivers receive your request.</div>
+          <span class="status-pill wait">● Searching</span>
+          <div class="progress"></div>
+          <div class="card route"><span class="dot">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div><span class="line"></span><span></span><span class="dot end">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <div class="card fare"><div><span class="eyebrow">APPROXIMATE CASH FARE</span><strong class="fare-number"></strong></div><span class="km distance-number"></span></div>
+          <button class="button" data-next="accepted">Preview driver acceptance</button>
+          <button class="button outline" data-next="quote">Cancel ride</button>
+          <div class="note">In the live app this updates automatically.</div>
+        </section>
+        <section class="screen" id="accepted">
+          <div class="eyebrow">Passenger · 7 of 9</div><h2>Driver on the way</h2><div class="sub">Your booking was accepted. Now you can see the driver.</div>
+          <span class="status-pill">● Accepted</span>
+          <div class="card driver"><span class="avatar">🚕</span><div><strong>Min Thu</strong><small>Vehicle plate · YGN 1234</small></div></div>
+          <div class="card route"><span class="dot">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div><span class="line"></span><span></span><span class="dot end">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <div class="card fare"><div><span class="eyebrow">APPROXIMATE CASH FARE</span><strong class="fare-number"></strong></div><span class="km distance-number"></span></div>
+          <button class="button" data-next="p-riding">Preview ride start</button>
+          <button class="button outline" data-next="quote">Cancel ride</button>
+        </section>
+        <section class="screen" id="p-riding">
+          <div class="eyebrow">Passenger · 8 of 9</div><h2>Ride in progress</h2><div class="sub">Your driver started the trip. Pay in cash when the ride ends.</div>
+          <span class="status-pill">● On your way</span>
+          <div class="card driver"><span class="avatar">🚕</span><div><strong>Min Thu</strong><small>Vehicle plate · YGN 1234</small></div></div>
+          <div class="card route"><span class="dot">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div><span class="line"></span><span></span><span class="dot end">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <button class="button" data-next="p-complete">Preview completed ride</button>
+          <button class="back" data-next="accepted">← Back</button>
+        </section>
+        <section class="screen" id="p-complete">
+          <div class="eyebrow">Passenger · 9 of 9</div><h2>Have a good day!</h2><div class="sub">Your ride is complete. Pay your driver in cash.</div>
+          <span class="status-pill">✓ Ride completed</span>
+          <div class="card fare"><div><span class="eyebrow">TRIP ESTIMATE</span><strong class="fare-number"></strong><small>Myanmar kyats · Cash</small></div><span class="km distance-number"></span></div>
+          <button class="button" data-next="p-home">Plan another ride</button>
+          <button class="button outline" data-next="welcome">Choose another role</button>
+        </section>
+        <section class="screen" id="p-call">
+          <div class="eyebrow">Passenger · Quick option</div>
+          <div class="feature-intro"><span class="feature-icon" aria-hidden="true">☎</span><h2>Call Taxi Immediately</h2><div class="sub">Connect with the driver team in seconds.</div></div>
+          <div class="card contact-option"><span class="feature-icon" aria-hidden="true">☎</span><div><strong>Main line</strong><small>Business number needed</small></div></div>
+          <div class="card contact-option"><span class="feature-icon" aria-hidden="true">☎</span><div><strong>Backup line</strong><small>Business number needed</small></div></div>
+          <button class="button" data-demo-toast="Add a verified business phone number to enable calling.">Call Now</button>
+          <div class="demo-note">Demo screen · No call is placed</div>
+          <button class="back" data-next="p-home">← Back to home</button>
+          <div class="feature-footer"><span>Safe</span><span>Fast</span><span>Reliable</span></div>
+        </section>
+        <section class="screen viber-feature" id="p-viber">
+          <div class="eyebrow">Passenger · Quick option</div>
+          <div class="feature-intro"><span class="feature-icon" aria-hidden="true">V</span><h2>Viber Booking</h2><div class="sub">Pre-order a taxi in a few easy steps.</div></div>
+          <div class="card">
+            <div class="viber-step"><b>1</b><div><strong>Your phone</strong><small>Enter your number in Viber</small></div></div>
+            <div class="viber-step"><b>2</b><div><strong>Pick-up location</strong><small class="pickup-name"></small></div></div>
+            <div class="viber-step"><b>3</b><div><strong>Destination</strong><small class="destination-name"></small></div></div>
+          </div>
+          <button class="button" data-demo-toast="Add a verified Viber contact to enable Viber booking.">Open Viber</button>
+          <div class="demo-note">Demo screen · No message is sent</div>
+          <button class="back" data-next="p-home">← Back to home</button>
+        </section>
+        <section class="screen" id="p-rides">
+          <div class="eyebrow">Passenger · Shortcuts</div><h2>My Rides</h2><div class="sub">Preview a recent booking and its status.</div>
+          <div class="card"><span class="status-pill">● Accepted</span><strong>Sample ride</strong><small>Yangon · Cash</small></div>
+          <div class="card route"><span class="dot">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div><span class="line"></span><span></span><span class="dot end">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <button class="button" data-next="accepted">View ride status</button>
+          <button class="back" data-next="p-home">← Back to home</button>
+        </section>
+        <section class="screen" id="p-favorites">
+          <div class="eyebrow">Passenger · Shortcuts</div><h2>Favorites</h2><div class="sub">Keep your regular Yangon places close at hand.</div>
+          <div class="card"><strong>Sule Pagoda</strong><small>Downtown</small></div>
+          <div class="card"><strong>Shwedagon Pagoda</strong><small>Dagon</small></div>
+          <button class="button" data-next="p-destination">Choose a destination</button>
+          <button class="back" data-next="p-home">← Back to home</button>
+        </section>
+        <section class="screen" id="p-tracking">
+          <div class="eyebrow">Passenger · Shortcuts</div><h2>Live Tracking</h2><div class="sub">Follow your ride status after a driver accepts.</div>
+          <span class="status-pill">● Driver on the way</span>
+          <div class="card driver"><span class="avatar">🚕</span><div><strong>Min Thu</strong><small>Vehicle plate · YGN 1234</small></div></div>
+          <button class="button" data-next="accepted">View sample ride</button>
+          <button class="back" data-next="p-home">← Back to home</button>
+        </section>
+        <section class="screen" id="p-support">
+          <div class="eyebrow">Passenger · Shortcuts</div><h2>Support</h2><div class="sub">Choose how you would like to contact the team.</div>
+          <button class="card role-choice" data-next="p-call"><b>☎</b><span><strong>Call Now</strong><small>See the phone booking screen</small></span>›</button>
+          <button class="card role-choice" data-next="p-viber"><b>V</b><span><strong>Viber Booking</strong><small>See the Viber booking screen</small></span>›</button>
+          <div class="demo-note">Add verified contact details before enabling these options.</div>
+          <button class="back" data-next="p-home">← Back to home</button>
+        </section>
+        <section class="screen" id="d-account">
+          <div class="eyebrow">Driver · 1 of 7</div><h2>Drive with Good Day</h2><div class="sub">Sign in or create a driver account with your vehicle plate.</div>
+          <label class="field">Your name<input placeholder="e.g. Min Thu" autocomplete="off"></label>
+          <label class="field">Email<input type="email" placeholder="driver@example.com" autocomplete="off"></label>
+          <label class="field">Vehicle plate<input placeholder="YGN 1234" autocomplete="off"></label>
+          <button class="button" data-next="d-offline">Continue demo</button>
+          <div class="note">This prototype does not send account details.</div>
+          <button class="back" data-next="welcome">← Back to role choice</button>
+        </section>
+        <section class="screen" id="d-offline">
+          <div class="eyebrow">Driver · 2 of 7</div><h2>You are offline</h2><div class="sub">Go online when you are ready to receive nearby requests.</div>
+          <div class="card"><span class="status-pill wait">● Not receiving requests</span><small>Your location helps find passengers near you.</small></div>
+          <button class="button" data-next="d-waiting">Go online</button>
+          <button class="back" data-next="d-account">← Back</button>
+        </section>
+        <section class="screen" id="d-waiting">
+          <div class="eyebrow">Driver · 3 of 7</div><h2>You are online</h2><div class="sub">You can now receive available requests near your location.</div>
+          <div class="card"><span class="status-pill">● Receiving requests</span><small>New offers appear here when a nearby passenger books.</small></div>
+          <button class="button" data-next="driver">Preview incoming request</button>
+          <button class="button outline" data-next="d-offline">Go offline</button>
+        </section>
+        <section class="screen" id="driver">
+          <div class="eyebrow">Driver · 4 of 7</div><h2>New ride request</h2><div class="sub">Review the trip before you accept it.</div><span class="status-pill wait">● New nearby offer</span>
+          <div class="card route"><span class="dot">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div><span class="line"></span><span></span><span class="dot end">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <div class="card fare"><div><span class="eyebrow">APPROXIMATE CASH FARE</span><strong class="fare-number"></strong><small>Passenger pays cash</small></div><span class="km distance-number"></span></div>
+          <button class="button" data-next="d-accepted">Accept ride</button>
+          <button class="button outline" data-next="d-waiting">Decline request</button>
+        </section>
+        <section class="screen" id="d-accepted">
+          <div class="eyebrow">Driver · 5 of 7</div><h2>Head to pickup</h2><div class="sub">The passenger now sees your name and vehicle plate.</div>
+          <span class="status-pill">● Ride accepted</span>
+          <div class="card driver"><span class="avatar">S</span><div><strong>Su Su</strong><small>Passenger</small></div></div>
+          <div class="card route"><span class="dot">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div><span class="line"></span><span></span><span class="dot end">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <button class="button" data-next="d-riding">Start ride</button>
+          <button class="back" data-next="driver">← Back</button>
+        </section>
+        <section class="screen" id="d-riding">
+          <div class="eyebrow">Driver · 6 of 7</div><h2>Ride in progress</h2><div class="sub">Drive to the destination, then complete the trip.</div>
+          <span class="status-pill">● Trip started</span>
+          <div class="card route"><span class="dot">◉</span><div><span class="eyebrow">PICKUP</span><strong class="pickup-name"></strong></div><span class="line"></span><span></span><span class="dot end">⚑</span><div><span class="eyebrow">DESTINATION</span><strong class="destination-name"></strong></div></div>
+          <div class="card fare"><div><span class="eyebrow">APPROXIMATE CASH FARE</span><strong class="fare-number"></strong></div><span class="km distance-number"></span></div>
+          <button class="button" data-next="d-complete">Complete ride</button>
+          <button class="back" data-next="d-accepted">← Back</button>
+        </section>
+        <section class="screen" id="d-complete">
+          <div class="eyebrow">Driver · 7 of 7</div><h2>Ride completed</h2><div class="sub">Collect the cash fare from the passenger.</div>
+          <span class="status-pill">✓ Trip completed</span>
+          <div class="card fare"><div><span class="eyebrow">TRIP ESTIMATE</span><strong class="fare-number"></strong><small>Myanmar kyats · Cash</small></div><span class="km distance-number"></span></div>
+          <button class="button" data-next="d-waiting">Wait for another request</button>
+          <button class="button outline" data-next="d-offline">Go offline</button>
+        </section>
+      </div>
+      <div class="note">Illustrative names and fare. Live values come from the API.</div>
+    </div></div>
+  </main>
+  <div id="demo-toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script>
+    let language = 'en';
+    try { language = localStorage.getItem('goodday-language') === 'my' ? 'my' : 'en'; } catch (_) {}
+    const myanmar = {
+      'Passenger · Quick option': 'ခရီးသည် · အမြန်ရွေးချယ်မှု',
+      'Passenger · Shortcuts': 'ခရီးသည် · အမြန်လမ်းကြောင်းများ',
+      'Pick-up location': 'စတင်မည့်နေရာ',
+      'Destination': 'သွားမည့်နေရာ',
+      'Book Taxi': 'တက္ကစီ ခေါ်ရန်',
+      'Call Now': 'ဖုန်းခေါ်ရန်',
+      'Viber Booking': 'Viber ဖြင့် ကားခေါ်ရန်',
+      'My Rides': 'ကျွန်ုပ်၏ ခရီးစဉ်များ',
+      'Favorites': 'အကြိုက်ဆုံးနေရာများ',
+      'Live Tracking': 'တိုက်ရိုက် အခြေအနေကြည့်ရန်',
+      'Support': 'အကူအညီ',
+      'Call Taxi Immediately': 'တက္ကစီကို ယခု ဖုန်းခေါ်ပါ',
+      'Connect with the driver team in seconds.': 'ယာဉ်မောင်းအဖွဲ့နှင့် ချက်ချင်း ဆက်သွယ်ပါ။',
+      'Main line': 'အဓိက ဖုန်းနံပါတ်',
+      'Backup line': 'အရန် ဖုန်းနံပါတ်',
+      'Business number needed': 'လုပ်ငန်းဖုန်းနံပါတ် လိုအပ်သည်',
+      'Demo screen · No call is placed': 'နမူနာစာမျက်နှာ · ဖုန်းမခေါ်ပါ',
+      'Add a verified business phone number to enable calling.': 'ဖုန်းခေါ်ရန် အတည်ပြုထားသော လုပ်ငန်းဖုန်းနံပါတ် ထည့်ပါ။',
+      'Safe': 'လုံခြုံ',
+      'Fast': 'မြန်ဆန်',
+      'Reliable': 'ယုံကြည်စိတ်ချရ',
+      'Pre-order a taxi in a few easy steps.': 'လွယ်ကူသော အဆင့်များဖြင့် တက္ကစီကို ကြိုတင်မှာယူပါ။',
+      'Your phone': 'သင့်ဖုန်း',
+      'Enter your number in Viber': 'Viber တွင် သင့်နံပါတ် ထည့်ပါ',
+      'Open Viber': 'Viber ဖွင့်ရန်',
+      'Demo screen · No message is sent': 'နမူနာစာမျက်နှာ · စာမပို့ပါ',
+      'Add a verified Viber contact to enable Viber booking.': 'Viber ဖြင့် ကားခေါ်ရန် အတည်ပြုထားသော Viber အဆက်အသွယ် ထည့်ပါ။',
+      'Preview a recent booking and its status.': 'မကြာသေးမီက ခရီးစဉ်နှင့် အခြေအနေကို ကြည့်ပါ။',
+      'Sample ride': 'နမူနာ ခရီးစဉ်',
+      'Yangon · Cash': 'ရန်ကုန် · ငွေသား',
+      'View ride status': 'ခရီးစဉ်အခြေအနေ ကြည့်ရန်',
+      'Keep your regular Yangon places close at hand.': 'ရန်ကုန်ရှိ သင်မကြာခဏ သွားသောနေရာများကို သိမ်းထားပါ။',
+      'Choose a destination': 'သွားမည့်နေရာ ရွေးရန်',
+      'Follow your ride status after a driver accepts.': 'ယာဉ်မောင်းလက်ခံပြီးနောက် ခရီးစဉ်အခြေအနေကို ကြည့်ပါ။',
+      '● Driver on the way': '● ယာဉ်မောင်း လာနေပါပြီ',
+      'View sample ride': 'နမူနာ ခရီးစဉ် ကြည့်ရန်',
+      'Choose how you would like to contact the team.': 'အဖွဲ့နှင့် ဆက်သွယ်ရန် နည်းလမ်းကို ရွေးပါ။',
+      'See the phone booking screen': 'ဖုန်းဖြင့် ကားခေါ်သည့် စာမျက်နှာကို ကြည့်ပါ',
+      'See the Viber booking screen': 'Viber ဖြင့် ကားခေါ်သည့် စာမျက်နှာကို ကြည့်ပါ',
+      'Add verified contact details before enabling these options.': 'ဤရွေးချယ်မှုများ ဖွင့်မီ အတည်ပြုထားသော အဆက်အသွယ်များ ထည့်ပါ။',
+      '← Back to home': '← ပင်မစာမျက်နှာသို့ ပြန်သွားရန်',
+      'Home': 'ပင်မစာမျက်နှာ',
+      'Good day!': 'မင်္ဂလာပါ!',
+      'Where would you like to go today?': 'ဒီနေ့ ဘယ်ကို သွားချင်ပါသလဲ။',
+      'Destination:': 'သွားမည့်နေရာ:',
+      'Your trusted taxi partner': 'သင့်ယုံကြည်ရသော တက္ကစီဝန်ဆောင်မှု',
+      'Myanmar pilot': 'မြန်မာ စမ်းသပ်ဝန်ဆောင်မှု',
+      'Explore every step of a ride.': 'ခရီးစဉ် အဆင့်တိုင်းကို ကြည့်ရှုပါ။',
+      'Start by choosing Passenger or Driver. Then follow each journey in order, or jump between screens in the guide. This clickable prototype uses sample data.': 'ခရီးသည် သို့မဟုတ် ယာဉ်မောင်းကို ရွေးပါ။ ခရီးစဉ်ကို အစဉ်လိုက် ကြည့်နိုင်သလို လမ်းညွှန်စာရင်းမှ စာမျက်နှာတစ်ခုချင်း ရွေးနိုင်သည်။ ဤနမူနာတွင် စမ်းသပ်ဒေတာကို အသုံးပြုထားသည်။',
+      'Choose a role to begin': 'စတင်ရန် အမျိုးအစား ရွေးပါ',
+      'Passenger flow': 'ခရီးသည် လုပ်ဆောင်ပုံ',
+      'Driver flow': 'ယာဉ်မောင်း လုပ်ဆောင်ပုံ',
+      'Change role': 'အမျိုးအစား ပြောင်းရန်',
+      'GO ANYWHERE': 'သွားလိုရာ သွားပါ',
+      'HAVE A GOOD DAY': 'ကောင်းသောနေ့လေး ဖြစ်ပါစေ',
+      'YANGON PILOT · CASH RIDES': 'ရန်ကုန် · ငွေသားခရီးစဉ်',
+      'Welcome': 'ကြိုဆိုပါတယ်',
+      'How will you use the app?': 'အက်ပ်ကို ဘယ်လို အသုံးပြုမလဲ။',
+      'Choose a role to see the right screens and actions.': 'သင့်အတွက် သက်ဆိုင်ရာ စာမျက်နှာများကို ကြည့်ရန် ရွေးပါ။',
+      'I am a passenger': 'ခရီးသည်အဖြစ် အသုံးပြုမည်',
+      'Get a fare estimate and book a taxi': 'ခန့်မှန်းခကို ကြည့်ပြီး တက္ကစီခေါ်ပါ',
+      'I am a driver': 'ယာဉ်မောင်းအဖြစ် အသုံးပြုမည်',
+      'Go online and accept nearby rides': 'အွန်လိုင်းဝင်ပြီး အနီးအနားမှ ခရီးစဉ်များကို လက်ခံပါ',
+      'Yangon pilot': 'ရန်ကုန် စမ်းသပ်ဝန်ဆောင်မှု',
+      'Cash rides with prices shown in Myanmar kyats.': 'ခရီးခကို ကျပ်ငွေဖြင့် ပြပြီး ငွေသားဖြင့် ပေးချေပါ။',
+      'Welcome aboard': 'ကြိုဆိုပါတယ်',
+      'Sign in or create your passenger account.': 'ခရီးသည်အကောင့်ဖြင့် ဝင်ရောက်ပါ သို့မဟုတ် အကောင့်ဖန်တီးပါ။',
+      'Your name': 'သင့်အမည်',
+      'e.g. Su Su': 'ဥပမာ - စုစု',
+      'Email': 'အီးမေးလ်',
+      'Password': 'စကားဝှက်',
+      'Search pickup places': 'စတင်မည့်နေရာ ရှာရန်',
+      'Search destinations': 'သွားမည့်နေရာ ရှာရန်',
+      'e.g. Min Thu': 'ဥပမာ - မင်းသူ',
+      'Continue demo': 'နမူနာကို ဆက်ကြည့်ရန်',
+      'This prototype does not send account details.': 'ဤနမူနာမှ အကောင့်အချက်အလက်များကို မပို့ပါ။',
+      '← Back to role choice': '← အမျိုးအစား ရွေးချယ်ရန် ပြန်သွားမည်',
+      'Choose your pickup': 'စတင်မည့်နေရာ ရွေးပါ',
+      'Search pilot places in Yangon, or use your current location.': 'ရန်ကုန်ရှိ စာရင်းဝင်နေရာကို ရှာပါ သို့မဟုတ် လက်ရှိတည်နေရာကို သုံးပါ။',
+      'Use my location': 'ကျွန်ုပ်၏ တည်နေရာကို သုံးရန်',
+      'Using my location': 'ကျွန်ုပ်၏ တည်နေရာကို သုံးနေသည်',
+      'Next: destination': 'နောက်တစ်ဆင့် - သွားမည့်နေရာ',
+      '← Back': '← ပြန်သွားရန်',
+      'Choose your destination': 'သွားမည့်နေရာ ရွေးပါ',
+      'Pick where you want to go from the listed locations.': 'စာရင်းဝင်နေရာများထဲမှ သွားမည့်နေရာကို ရွေးပါ။',
+      'Next: review fare': 'နောက်တစ်ဆင့် - ခရီးခ ကြည့်ရန်',
+      'Review your ride': 'ခရီးစဉ်ကို စစ်ဆေးပါ',
+      'See the approximate cash fare before you book.': 'ကားမခေါ်မီ ခန့်မှန်းငွေသားခကို ကြည့်ပါ။',
+      'PICKUP': 'စတင်မည့်နေရာ',
+      'DESTINATION': 'သွားမည့်နေရာ',
+      'APPROXIMATE CASH FARE': 'ခန့်မှန်း ငွေသားခ',
+      'Pay the driver in kyats': 'ယာဉ်မောင်းအား ကျပ်ငွေဖြင့် ပေးချေပါ',
+      'Sample calculation. The live app uses a road route.': 'ဤသည် နမူနာတွက်ချက်မှုဖြစ်သည်။ အက်ပ်တွင် လမ်းကြောင်းအလိုက် တွက်ချက်ပါမည်။',
+      'Book a taxi': 'တက္ကစီ ခေါ်ရန်',
+      '← Change destination': '← သွားမည့်နေရာ ပြောင်းရန်',
+      'Finding your driver': 'ယာဉ်မောင်း ရှာနေသည်',
+      'Nearby available drivers receive your request.': 'အနီးအနားရှိ အားလပ်သော ယာဉ်မောင်းများထံ တောင်းဆိုချက် ပို့ထားသည်။',
+      '● Searching': '● ရှာဖွေနေသည်',
+      'Preview driver acceptance': 'ယာဉ်မောင်း လက်ခံသည့်အဆင့် ကြည့်ရန်',
+      'Cancel ride': 'ခရီးစဉ် ပယ်ဖျက်ရန်',
+      'In the live app this updates automatically.': 'အက်ပ်တွင် ဤအခြေအနေ အလိုအလျောက် ပြောင်းလဲပါမည်။',
+      'Driver on the way': 'ယာဉ်မောင်း လာနေပါပြီ',
+      'Your booking was accepted. Now you can see the driver.': 'သင့်တောင်းဆိုချက်ကို လက်ခံပြီးပါပြီ။ ယာဉ်မောင်းအချက်အလက်ကို ကြည့်နိုင်ပါပြီ။',
+      '● Accepted': '● လက်ခံပြီး',
+      'Vehicle plate · YGN 1234': 'ယာဉ်နံပါတ် · YGN 1234',
+      'Preview ride start': 'ခရီးစဉ် စတင်သည့်အဆင့် ကြည့်ရန်',
+      'Ride in progress': 'ခရီးစဉ် လုပ်ဆောင်နေသည်',
+      'Your driver started the trip. Pay in cash when the ride ends.': 'ယာဉ်မောင်းက ခရီးစဉ်ကို စတင်ထားသည်။ ပြီးဆုံးလျှင် ငွေသားဖြင့် ပေးချေပါ။',
+      '● On your way': '● ခရီးသွားနေသည်',
+      'Preview completed ride': 'ပြီးဆုံးသည့်အဆင့် ကြည့်ရန်',
+      'Have a good day!': 'ကောင်းသောနေ့လေး ဖြစ်ပါစေ။',
+      'Your ride is complete. Pay your driver in cash.': 'ခရီးစဉ် ပြီးဆုံးပါပြီ။ ယာဉ်မောင်းအား ငွေသားဖြင့် ပေးချေပါ။',
+      '✓ Ride completed': '✓ ခရီးစဉ် ပြီးဆုံးပါပြီ',
+      'TRIP ESTIMATE': 'ခန့်မှန်း ခရီးခ',
+      'Myanmar kyats · Cash': 'ကျပ် · ငွေသား',
+      'Plan another ride': 'နောက်ခရီးစဉ် စီစဉ်ရန်',
+      'Choose another role': 'အခြားအမျိုးအစား ရွေးရန်',
+      'Drive with Good Day': 'Good Day နှင့် ယာဉ်မောင်းပါ',
+      'Sign in or create a driver account with your vehicle plate.': 'ယာဉ်နံပါတ်ဖြင့် ယာဉ်မောင်းအကောင့်ဝင်ပါ သို့မဟုတ် ဖန်တီးပါ။',
+      'Vehicle plate': 'ယာဉ်နံပါတ်',
+      'You are offline': 'အော့ဖ်လိုင်း ဖြစ်နေပါသည်',
+      'Go online when you are ready to receive nearby requests.': 'အနီးအနားမှ ခရီးစဉ်များ လက်ခံရန် အဆင်သင့်ဖြစ်ပါက အွန်လိုင်းဝင်ပါ။',
+      '● Not receiving requests': '● တောင်းဆိုမှုများ မရရှိသေးပါ',
+      'Your location helps find passengers near you.': 'သင့်တည်နေရာက အနီးအနားရှိ ခရီးသည်များကို ရှာဖွေရာတွင် ကူညီသည်။',
+      'Go online': 'အွန်လိုင်းဝင်ရန်',
+      'You are online': 'အွန်လိုင်း ဖြစ်နေပါပြီ',
+      'You can now receive available requests near your location.': 'ယခု သင့်အနီးအနားမှ ခရီးစဉ်တောင်းဆိုမှုများ ရရှိနိုင်ပါပြီ။',
+      '● Receiving requests': '● တောင်းဆိုမှုများ လက်ခံနေသည်',
+      'New offers appear here when a nearby passenger books.': 'အနီးအနားရှိ ခရီးသည်က ကားခေါ်လျှင် တောင်းဆိုမှုကို ဤနေရာတွင် မြင်ရပါမည်။',
+      'Preview incoming request': 'တောင်းဆိုမှုအသစ် ကြည့်ရန်',
+      'Go offline': 'အော့ဖ်လိုင်းဝင်ရန်',
+      'New ride request': 'ခရီးစဉ်တောင်းဆိုမှုအသစ်',
+      'Review the trip before you accept it.': 'လက်မခံမီ ခရီးစဉ်အချက်အလက်ကို ကြည့်ပါ။',
+      '● New nearby offer': '● အနီးအနားမှ တောင်းဆိုမှုအသစ်',
+      'Passenger pays cash': 'ခရီးသည်က ငွေသားဖြင့် ပေးချေမည်',
+      'Accept ride': 'ခရီးစဉ် လက်ခံရန်',
+      'Decline request': 'တောင်းဆိုမှု ငြင်းပယ်ရန်',
+      'Head to pickup': 'ခရီးသည်ရှိရာသို့ သွားပါ',
+      'The passenger now sees your name and vehicle plate.': 'ခရီးသည်က သင့်အမည်နှင့် ယာဉ်နံပါတ်ကို မြင်နိုင်ပါပြီ။',
+      '● Ride accepted': '● ခရီးစဉ် လက်ခံပြီး',
+      'Passenger': 'ခရီးသည်',
+      'Start ride': 'ခရီးစဉ် စတင်ရန်',
+      'Drive to the destination, then complete the trip.': 'သွားမည့်နေရာသို့ မောင်းနှင်ပြီး ခရီးစဉ်ကို အဆုံးသတ်ပါ။',
+      '● Trip started': '● ခရီးစဉ် စတင်ပြီး',
+      'Complete ride': 'ခရီးစဉ် ပြီးဆုံးရန်',
+      'Ride completed': 'ခရီးစဉ် ပြီးဆုံးပါပြီ',
+      'Collect the cash fare from the passenger.': 'ခရီးသည်ထံမှ ငွေသားခကို လက်ခံပါ။',
+      '✓ Trip completed': '✓ ခရီးစဉ် ပြီးဆုံးပါပြီ',
+      'Wait for another request': 'နောက်တောင်းဆိုမှုကို စောင့်ရန်',
+      'Illustrative names and fare. Live values come from the API.': 'အမည်နှင့် ခရီးခများသည် နမူနာဖြစ်သည်။ အက်ပ်တွင် တိုက်ရိုက်အချက်အလက်ကို ပြပါမည်။',
+      'Sign in or register': 'ဝင်ရောက်ရန် သို့မဟုတ် အကောင့်ဖန်တီးရန်',
+      'Choose pickup': 'စတင်မည့်နေရာ ရွေးရန်',
+      'Choose destination': 'သွားမည့်နေရာ ရွေးရန်',
+      'Review fare': 'ခရီးခ စစ်ဆေးရန်',
+      'Find a driver': 'ယာဉ်မောင်း ရှာရန်',
+      'Driver accepted': 'ယာဉ်မောင်း လက်ခံပြီး',
+      'Ride complete': 'ခရီးစဉ် ပြီးဆုံး',
+      'Wait for requests': 'တောင်းဆိုမှုများကို စောင့်ရန်',
+      'Review request': 'တောင်းဆိုမှု စစ်ဆေးရန်',
+      'Change language': 'ဘာသာစကား ပြောင်းရန်',
+      'No listed place matches. Try another name.': 'ကိုက်ညီသော နေရာ မရှိပါ။ အခြားအမည်ဖြင့် ရှာပါ။'
+    };
+    const placeMy = {
+      'Sule Pagoda': 'ဆူးလေဘုရား', 'Yangon Central Railway Station': 'ရန်ကုန်ဘူတာကြီး',
+      'Bogyoke Aung San Market': 'ဗိုလ်ချုပ်အောင်ဆန်းဈေး',
+      'Shwedagon Pagoda': 'ရွှေတိဂုံဘုရား', 'Myanmar Plaza': 'မြန်မာပလာဇာ',
+      'Yangon International Airport': 'ရန်ကုန်အပြည်ပြည်ဆိုင်ရာလေဆိပ်',
+      'Downtown': 'မြို့လယ်', 'Mingala Taungnyunt': 'မင်္ဂလာတောင်ညွန့်',
+      'Pabedan': 'ပန်းဘဲတန်း', 'Dagon': 'ဒဂုံ', 'Bahan': 'ဗဟန်း',
+      'Mingaladon': 'မင်္ဂလာဒုံ', 'My current location': 'ကျွန်ုပ်၏ လက်ရှိတည်နေရာ'
+    };
+    function translate(english) {
+      if (language !== 'my') return english;
+      const step = english.match(/^(Passenger|Driver) · (\d+) of (\d+)$/);
+      if (step) return (step[1] === 'Passenger' ? 'ခရီးသည်' : 'ယာဉ်မောင်း') +
+          ' · အဆင့် ' + step[2] + '/' + step[3];
+      return myanmar[english] || placeMy[english] || english;
+    }
+    const localizedPlace = english => language === 'my' ? (placeMy[english] || english) : english;
+    const staticNodes = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.parentElement?.closest('script, style')) continue;
+      const english = node.nodeValue.trim();
+      if (english) staticNodes.push({ node, english });
+    }
+    const inputText = [...document.querySelectorAll('input[placeholder]')]
+        .map(input => ({ input, english: input.placeholder }));
+    function applyLanguage() {
+      document.documentElement.lang = language;
+      document.title = language === 'my'
+          ? 'Good Day Kilo Taxi · မြန်မာ နမူနာ' : 'Good Day Kilo Taxi · Guided prototype';
+      staticNodes.forEach(entry => {
+        const translated = translate(entry.english);
+        entry.node.nodeValue = entry.node.nodeValue.replace(entry.node.nodeValue.trim(), translated);
+      });
+      inputText.forEach(entry => entry.input.placeholder = translate(entry.english));
+      document.querySelectorAll('[data-language]').forEach(button => {
+        button.classList.toggle('active', button.dataset.language === language);
+        button.setAttribute('aria-pressed', String(button.dataset.language === language));
+      });
+      const phoneSwitch = document.querySelector('[data-toggle-language]');
+      phoneSwitch.textContent = language === 'my' ? 'မြန်မာ' : 'EN';
+      phoneSwitch.setAttribute('aria-label', translate('Change language'));
+    }
+    const flows = {
+      passenger: [
+        ['p-account', 'Sign in or register'], ['p-home', 'Home'], ['p-pickup', 'Choose pickup'],
+        ['p-destination', 'Choose destination'], ['quote', 'Review fare'],
+        ['search', 'Find a driver'], ['accepted', 'Driver accepted'],
+        ['p-riding', 'Ride in progress'], ['p-complete', 'Ride complete']
+      ],
+      driver: [
+        ['d-account', 'Sign in or register'], ['d-offline', 'Go online'],
+        ['d-waiting', 'Wait for requests'], ['driver', 'Review request'],
+        ['d-accepted', 'Head to pickup'], ['d-riding', 'Start ride'],
+        ['d-complete', 'Complete ride']
+      ]
+    };
+    const passengerExtras = new Set(['p-call', 'p-viber', 'p-rides', 'p-favorites', 'p-tracking', 'p-support']);
+    const places = [
+      { id: 'sule', name: 'Sule Pagoda', area: 'Downtown', lat: 16.7745, lon: 96.1582 },
+      { id: 'station', name: 'Yangon Central Railway Station', area: 'Mingala Taungnyunt', lat: 16.7827, lon: 96.1616 },
+      { id: 'market', name: 'Bogyoke Aung San Market', area: 'Pabedan', lat: 16.7806, lon: 96.1555 },
+      { id: 'shwedagon', name: 'Shwedagon Pagoda', area: 'Dagon', lat: 16.7984, lon: 96.1497 },
+      { id: 'plaza', name: 'Myanmar Plaza', area: 'Bahan', lat: 16.8280, lon: 96.1559 },
+      { id: 'airport', name: 'Yangon International Airport', area: 'Mingaladon', lat: 16.9073, lon: 96.1332 }
+    ];
+    const selection = { pickup: 'sule', destination: 'shwedagon' };
+    const place = id => places.find(item => item.id === id);
+    const pickupName = () => localizedPlace(selection.pickup === 'gps'
+        ? 'My current location' : place(selection.pickup).name);
+
+    function sampleFare() {
+      if (selection.pickup === 'gps' ||
+          (selection.pickup === 'sule' && selection.destination === 'shwedagon')) {
+        return { km: 3.2, kyats: 5200 };
+      }
+      const a = place(selection.pickup), b = place(selection.destination), rad = Math.PI / 180;
+      const deltaLat = (b.lat - a.lat) * rad, deltaLon = (b.lon - a.lon) * rad;
+      const h = Math.sin(deltaLat / 2) ** 2 +
+          Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(deltaLon / 2) ** 2;
+      const km = Math.max(1.2, Math.round(6371 * 2 * Math.asin(Math.sqrt(h)) * 13.5) / 10);
+      return { km, kyats: 2000 + Math.round(km * 1000) };
+    }
+
+    function updateTrip() {
+      const fare = sampleFare();
+      document.querySelectorAll('.pickup-name').forEach(el => el.textContent = pickupName());
+      document.querySelectorAll('.destination-name').forEach(el =>
+        el.textContent = localizedPlace(place(selection.destination).name));
+      document.querySelectorAll('.fare-number').forEach(el => el.textContent = language === 'my'
+        ? fare.kyats.toLocaleString('en-US') + ' ကျပ်'
+        : 'Ks ' + fare.kyats.toLocaleString('en-US'));
+      document.querySelectorAll('.distance-number').forEach(el => el.textContent =
+        fare.km.toFixed(1) + (language === 'my' ? ' ကီလိုမီတာ' : ' km'));
+    }
+
+    function renderPlaces(kind, query = '') {
+      const list = document.getElementById(kind + '-list');
+      list.replaceChildren();
+      const matches = places.filter(item =>
+        (item.name + ' ' + item.area + ' ' + localizedPlace(item.name) + ' ' +
+          localizedPlace(item.area)).toLowerCase().includes(query.trim().toLowerCase()));
+      if (!matches.length) {
+        const empty = document.createElement('p');
+        empty.className = 'sub';
+        empty.textContent = translate('No listed place matches. Try another name.');
+        list.append(empty);
+      }
+      matches.forEach(item => {
+        const button = document.createElement('button');
+        button.className = 'place-choice' + (selection[kind] === item.id ? ' selected' : '');
+        button.dataset.choose = kind;
+        button.dataset.place = item.id;
+        button.setAttribute('aria-pressed', String(selection[kind] === item.id));
+        const title = document.createElement('strong');
+        title.textContent = localizedPlace(item.name);
+        const area = document.createElement('small');
+        area.textContent = localizedPlace(item.area);
+        button.append(title, area);
+        list.append(button);
+      });
+    }
+
+    function show(name) {
+      const screen = document.getElementById(name);
+      if (!screen || !screen.classList.contains('screen')) return;
+      document.querySelector('.phone').dataset.screen = name;
+      const role = name === 'welcome' ? null :
+          (flows.passenger.some(step => step[0] === name) || passengerExtras.has(name)) ? 'passenger' : 'driver';
+      document.querySelectorAll('.screen').forEach(el => {
+        el.classList.toggle('active', el.id === name);
+        el.setAttribute('aria-hidden', String(el.id !== name));
+      });
+      document.querySelectorAll('.role-tab').forEach(el =>
+        el.classList.toggle('active', el.dataset.role === role));
+      document.getElementById('guide-title').textContent = role
+        ? (language === 'my'
+            ? (role === 'passenger' ? 'ခရီးသည် လုပ်ဆောင်ပုံ · ၉ အဆင့်' : 'ယာဉ်မောင်း လုပ်ဆောင်ပုံ · ၇ အဆင့်')
+            : (role === 'passenger' ? 'Passenger journey · 9 steps' : 'Driver journey · 7 steps'))
+        : translate('Choose a role to begin');
+      const guide = document.getElementById('steps');
+      guide.replaceChildren();
+      if (role) flows[role].forEach((step, index) => {
+        const button = document.createElement('button');
+        button.className = 'step' + (step[0] === name ? ' active' : '');
+        button.dataset.next = step[0];
+        if (step[0] === name) button.setAttribute('aria-current', 'step');
+        const number = document.createElement('span');
+        number.className = 'eyebrow';
+        number.textContent = String(index + 1).padStart(2, '0') + ' · ' +
+          (language === 'my' ? (role === 'passenger' ? 'ခရီးသည်' : 'ယာဉ်မောင်း') : role);
+        const title = document.createElement('strong');
+        title.textContent = translate(step[1]);
+        const detail = document.createElement('small');
+        detail.textContent = language === 'my'
+          ? 'အဆင့် ' + (index + 1) + '/' + flows[role].length
+          : 'Step ' + (index + 1) + ' of ' + flows[role].length;
+        button.append(number, title, detail);
+        guide.append(button);
+      });
+      renderPlaces('pickup');
+      renderPlaces('destination');
+      if (selection.pickup === 'gps') document.querySelector('[data-gps]').textContent = translate('Using my location');
+      document.querySelectorAll('[data-search]').forEach(input => input.value = '');
+      updateTrip();
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', event => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      if (button.dataset.language) {
+        language = button.dataset.language;
+        try { localStorage.setItem('goodday-language', language); } catch (_) {}
+        applyLanguage();
+        show(document.querySelector('.screen.active').id);
+      } else if (button.dataset.toggleLanguage) {
+        language = language === 'my' ? 'en' : 'my';
+        try { localStorage.setItem('goodday-language', language); } catch (_) {}
+        applyLanguage();
+        show(document.querySelector('.screen.active').id);
+      } else if (button.dataset.demoToast) {
+        const toast = document.getElementById('demo-toast');
+        toast.textContent = translate(button.dataset.demoToast);
+        toast.hidden = false;
+        clearTimeout(window.demoToastTimer);
+        window.demoToastTimer = setTimeout(() => { toast.hidden = true; }, 4200);
+      } else if (button.dataset.role) show(button.dataset.role === 'passenger' ? 'p-account' : 'd-account');
+      else if (button.dataset.next) show(button.dataset.next);
+      else if (button.dataset.choose) {
+        selection[button.dataset.choose] = button.dataset.place;
+        const input = document.querySelector('[data-search="' + button.dataset.choose + '"]');
+        renderPlaces(button.dataset.choose, input.value);
+        updateTrip();
+      } else if (button.dataset.gps) {
+        selection.pickup = 'gps';
+        renderPlaces('pickup', document.querySelector('[data-search="pickup"]').value);
+        button.textContent = translate('Using my location');
+        updateTrip();
+      }
+    });
+    document.addEventListener('input', event => {
+      if (event.target.dataset.search) renderPlaces(event.target.dataset.search, event.target.value);
+    });
+    applyLanguage();
+    show('welcome');
+  </script>
+</body>
+</html>
